@@ -432,7 +432,7 @@ def f1(nom_dossier_entrée):
             
         except Exception as e:
             #On ajoute à la Liste des mauvais livre le nom complet du fichier avec avant : "ce fichier ne respecte pas les normes epub2 et epub3: "
-            L_mauvais_livres.append("ce fichier ne respecte pas les normes epub2 et epub3: "+ fichier1a.name)
+            L_mauvais_livres.append("ce fichier ne respecte pas les normes epub2 et epub3: "+ fichier1a.name) 
     
     #On retourne les dictionnaires et la liste des mauvais livres. Et Liste avec le nom des fichiers sans extensions: L_fichiers1a
     return dic1, dic2, L_mauvais_livres, L_fichiers1a

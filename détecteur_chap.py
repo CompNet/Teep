@@ -235,7 +235,7 @@ def fpublisher4(L_tokenized4_5,nb_lignes4_5):
 
 
 # Fonction Principale:
-# On récupère en entrée: dossier_sortie2, dic2, dic3 et L_nom_livres_sansext
+# On récupère en entrée: dossier_sortie3_1, dic2, dic3 et L_nom_livres_sansext
 def fprincipale5(dict2,dict3,L_nom_livres_sansext):
     # On va parcourir L_nom_livres_sansext
     for nom_livre4 in L_nom_livres_sansext:
@@ -247,9 +247,9 @@ def fprincipale5(dict2,dict3,L_nom_livres_sansext):
         chemin4.mkdir(parents=True, exist_ok=True)
         # On va récupérer son dictionnaire dans dict2: pour d'autres features plus tard. 
         dict_livre4 = dict2[nom_livre4]
-        # On va parcourir son dossier dans dossier_sortie2
+        # On va parcourir son dossier dans dossier_sortie3_1
         # Récupérations : on prend chemin4_1
-        chemin4_1 = Path("C:/Users/Fichiers de Travail/stage 2A/Projet/Traitement/Traitement jeu de données 1 et 2/dossier_sortie2/"+nom_livre4)
+        chemin4_1 = Path("C:/Users/Fichiers de Travail/stage 2A/Projet/Traitement/Traitement jeu de données 1 et 2/dossier_sortie3_1/"+nom_livre4)
         # On récupère les fichiers:
         liste_fichiers4 = chemin4_1.glob("*")
         print(nom_livre4)
