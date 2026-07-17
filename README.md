@@ -2,7 +2,7 @@
 
 Teep is a Python pipeline that automatically extracts the textual content of EPUB files, cleans it up, and then isolates the actual chapters of a book by filtering out everything that isn't part of the narrative (acknowledgements, copyright, glossary, publisher pages, etc.).
 
-The project was developed as part of an internship (processing two datasets of EPUB books) and aims to produce, for each book, a folder containing only the text files that correspond to genuine chapters.
+The project was developed as part of an internship (processing two datasets of EPUB books) and aims to produce, for each book, a folder containing only the text files that correspond to chapters, prologues or epilogues.
 
 ## Table of contents
 
@@ -16,16 +16,18 @@ The project was developed as part of an internship (processing two datasets of E
 - [Internal dictionary structures](#internal-dictionary-structures)
 - [Evaluation (Test.py)](#evaluation-testpy)
 - [License](#license)
+- [Results](#results)
+- [Metrics](#metrics)
 
 ## How it works
 
 The pipeline processes a folder containing `.epub` files and performs the following steps:
 
-1. **Extraction** of the table of contents (`.ncx` or `nav.xhtml`) and the XHTML files associated with each entry.
+1. **Extraction** of the files of each book.
 2. **Conversion** of these HTML/XHTML files into plain text via Calibre (`ebook-convert`).
 3. **Detection of malformed books** (duplicated content, empty files), which are discarded from further processing.
 4. **Chapter detection** based on the filename and the text of the table-of-contents entry (keywords such as "chapter", "prologue", "epilogue", etc., plus detection of numeric sequences).
-5. **Detection of books with insufficient content** (files with fewer than 20 words once tokenized).
+5. **Detection of books with insufficient content** 
 6. **Fine-grained filtering of remaining non-narrative content** in files marked as chapters (acknowledgements, overly short section titles, copyright, glossary, publisher mentions), using statistical heuristics and stemming.
 7. Production of a final folder containing, for each valid book, only the text files corresponding to actual chapters.
 
@@ -137,3 +139,9 @@ A list `L_name_books_errors` allows certain books known to cause issues to be ex
 ## License
 
 This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [`LICENSE`](./LICENSE) file for the full text.
+
+## Results
+
+
+
+## Metrics
