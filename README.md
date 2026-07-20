@@ -2,7 +2,7 @@
 
 Teep is a Python pipeline that automatically extracts the textual content of EPUB files, cleans it up, and then isolates the actual chapters of a book by filtering out everything that isn't part of the narrative (acknowledgements, copyright, glossary, publisher pages, etc.).
 
-The project was developed as part of an internship (processing two datasets of EPUB books) and aims to produce, for each book, a folder containing only the text files that correspond to genuine chapters.
+The project aims to produce, for each book, a folder containing only the text files that correspond to chapters, prologues or epilogues.
 
 ## Table of contents
 
@@ -16,18 +16,32 @@ The project was developed as part of an internship (processing two datasets of E
 - [Internal dictionary structures](#internal-dictionary-structures)
 - [Evaluation (Test.py)](#evaluation-testpy)
 - [License](#license)
+- [Results](#results)
+- [Metrics](#metrics)
 
 ## How it works
 
-The pipeline processes a folder containing `.epub` files and performs the following steps:
+To lauch the pipeline you have to put your epubs in the folder: epubs. And then run the file: total.py
+You have to modify criterias.py with at least:
+- the path of the project in your machine.
+- the path to calibre in your machine. The path to: ebook-convert.exe.
 
-1. **Extraction** of the table of contents (`.ncx` or `nav.xhtml`) and the XHTML files associated with each entry.
-2. **Conversion** of these HTML/XHTML files into plain text via Calibre (`ebook-convert`).
-3. **Detection of malformed books** (duplicated content, empty files), which are discarded from further processing.
-4. **Chapter detection** based on the filename and the text of the table-of-contents entry (keywords such as "chapter", "prologue", "epilogue", etc., plus detection of numeric sequences).
-5. **Detection of books with insufficient content** (files with fewer than 20 words once tokenized).
-6. **Fine-grained filtering of remaining non-narrative content** in files marked as chapters (acknowledgements, overly short section titles, copyright, glossary, publisher mentions), using statistical heuristics and stemming.
-7. Production of a final folder containing, for each valid book, only the text files corresponding to actual chapters.
+And you can modify the rest of the criterias as you want.
+
+The result will be in the folder: folder_exit4. A final folder containing, for each valid book, only the text files corresponding to actual chapters, epilogues and prologues. In the right order.
+
+And the script total.py will also give:
+
+- The dictionnary of annotations and the list of the book discarded with the reason. 
+- A general overview of the annotations of the books.
+- The number of books discarded and kept.
+
+1. **Extraction** of the files of each book and extraction and creation of all the metadata. And first detection of malformed books. The books that are discarded are the books that do not respect the elementary rules of the norm Epub 2 or the norm Epub 3.
+2. **Conversion** of these HTM/HTML/XHTML files into plain text via Calibre.
+3. **First detection of malformed books** which are discarded from further processing.  The detection here is on the content of the files of the ebooks.
+4. **First detection of Chapters and non Chapters** Based on the metadata (keywords, numeric sequences..). Based on the keywords that you can ajust in criterias.py.
+5. **Second detection of malformed books** Based of the coherence between the metadatas and the real content of the ebook.
+6. **Second detection of non Chapters** In the files still not detected as Chapters nor no Chapters. Based on the content of the ebooks. Using statistical heuristics and stemming. Based on the criterias in criterias.py that you can customize. Production of a final folder containing, for each valid book, only the text files corresponding to actual chapters, epilogues and prologues. In the right order.
 
 ## Requirements
 
@@ -100,7 +114,6 @@ python total.py
 ```
 
 The script successively creates and populates `folder_exit1`, `folder_exit2`, `folder_exit3`, `folder_exit3_1`, and `folder_exit4` inside `path_project`, then prints a statistical summary to the console.
-
 The script can be re-run multiple times on the same input folder without recreating already-existing folders (files are simply overwritten), at the cost of redundant computation.
 
 ## Output folder structure
@@ -126,14 +139,32 @@ The script can be re-run multiple times on the same input folder without recreat
 
 ## Evaluation (`Test.py`)
 
-`Test.py` is used to evaluate the quality of chapter detection against a manually annotated dataset (`Dataset expected as output` folder):
+In the end you can also test the capacities of the program. With the code: Test.py.
+You have lauched the pipeline and obtained the results in the folder: folder_exit4. And you want to evaluate these results.
+You put the reference, the folders that you expect to obtain, folder containing a folder for each book, with in it only the text files corresponding to actual chapters, epilogues and prologues. In the right order. 
+In the folder: Dataset expected as output.
+In the list `L_name_books_errors` you the `list_bad_books` that you obtained when you launched total.py.
+And you launch the program: Test.py.
+You will obtain the metrics:
 
-- **Recall** and **accuracy** per book and on average, along with an associated F-score.
-- **Kendall's tau** to compare the order of detected chapters with the expected order.
+- **Recall**,**accuracy** and **F-score** per book and on average.
+- **Kendall's tau** as defined by Emond & Mason to compare the order of detected chapters with the expected order. But the False positives are not taken into account.
 - Generation of histograms and bar charts (via `matplotlib`) to visualize these metrics across all books.
-
-A list `L_name_books_errors` allows certain books known to cause issues to be excluded from the evaluation.
 
 ## License
 
 This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [`LICENSE`](./LICENSE) file for the full text.
+
+## Results
+
+With 40 random books, from many sources with 1342 files:
+- 27.5% of the books discarded because malformed. 72.5% o the book kept and analyzed.
+- On the 1342 files of the 40 books. 18.6% of books annotated as non chapters, 69.8% annotated as chapters. And 11.6% non annotated, considered as chapters. 
+
+## Metrics
+
+With 40 random books, from many sources with 1342 files:
+- The total **recall** is : 0.9920755696007331
+- The total **accuracy** is : 0.9809682181916577
+- The total **f-score** is : 0.9862999512731967
+- The **Kendall score** : 0.9640278444247414

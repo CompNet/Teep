@@ -15,12 +15,7 @@ from criterias import path_project
 
 # Note L_name_books_errors
 # To avoid having to rerun the entire process each time
-L_name_books_errors = ["Father_goriot", "Grave Witch (Alex Craft, #01) -- Price, Kalayna -- Alex Craft 1, 2010 -- Penguin Group (USA) --", 
-"The Enchanted Castle by E. Nesbit", "_OceanofPDF.com_The_Winter_of_Our_Discontent_-_John_Steinbeck", 
-"_OceanofPDF.com_Under_the_Never_Sky_Omnibus_-_Veronica_Rossi",
-"_OceanofPDF.com_Wuthering_Heights_-_Emily_Bronte (1)", "_OceanofPDF.com_Yellow_Crocus_-_Laila_Ibrahim", 
-"The_Martian_by_Andy_Weir", "_OceanofPDF.com_True_love_experiment_-_Christina_Lauren", 
-"_OceanofPDF.com_Twisted_-_Emily_McIntire", "_OceanofPDF.com_Wicked_and_the_Wallflower_-_Sarah_MacLean"]
+L_name_books_errors = []
 
 
 # Function fT1
@@ -217,7 +212,6 @@ def fmetrics(dictest1, dictest2):
     return L_recalls, L_accuracys, L_fscores, recall_total, accuracy_total, f_score_total
 
 
-# Test
 # We have: dictest1 from fT1, representing the number of documents correctly assigned as chapters.
 # And by taking the length of the keys for each book, we get the number of elements:
 # That should be assigned as chapters.

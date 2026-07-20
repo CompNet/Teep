@@ -56,7 +56,7 @@ import detector_chap
 dic3_final = detector_chap.fprincipal5(dic2,dic3,L_name_books_withoutext)
 print("Step 4 completed")
 
-
+print("dictionnary of the books, their files and the annotation of each file and the list of the bad books")
 print(dic3_final,list_bad_books)
 
 
@@ -87,17 +87,17 @@ for key in keys:
         # +1 to the count of these sub-keys in dic3_final
         nb_under_keys += 1
 
-print("nb_under_keys")
+print("nb_under_keys: total number of files")
 print(nb_under_keys)
-print("nb_under_keys0")
+print("nb_under_keys0: total number of files neither detected as Chapters nor Non chapters")
 print(nb_under_keys0)
-print("nb_under_keys1")
+print("nb_under_keys1: total number of files detected as Chapters")
 print(nb_under_keys1)
-print("nb_under_keysmoins1")
+print("nb_under_keysmoins1: total number of files detected as Non chapters")
 print(nb_under_keysmoins1)
-print("list_bad_books")
+print("number of bad books, that have been discarded")
 print(len(list_bad_books))
-print("L_name_books_withoutext")
+print("number of good books, that have not been discarded")
 print(len(L_name_books_withoutext))
 
 
