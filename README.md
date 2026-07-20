@@ -40,7 +40,7 @@ And the script total.py will also give:
 
 1. **Extraction** of the files of each book and extraction and creation of all the metadata. And first detection of malformed books. The books that are discarded are the books that do not respect the elementary rules of the norm Epub 2 or the norm Epub 3.
 2. **Conversion** of these HTM/HTML/XHTML files into plain text via Calibre.
-3. **First detection of malformed books** which are discarded from further processing.  The detection here is on the content of the files of the ebooks.
+3. **First detection of malformed books** which are discarded from further processing.  The detection here is on the content of the files of the ebooks. We also discard the books where in the toc the references are to a the same file but to different part using the #. 
 4. **First detection of Chapters and non Chapters** Based on the metadata (keywords, numeric sequences..). Based on the keywords that you can ajust in criterias.py.
 5. **Second detection of malformed books** Based of the coherence between the metadatas and the real content of the ebook.
 6. **Second detection of non Chapters** In the files still not detected as Chapters nor no Chapters. Based on the content of the ebooks. Using statistical heuristics and stemming. Based on the criterias in criterias.py that you can customize. Production of a final folder containing, for each valid book, only the text files corresponding to actual chapters, epilogues and prologues. In the right order.
