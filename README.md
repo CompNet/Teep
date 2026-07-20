@@ -18,6 +18,8 @@ The project aims to produce, for each book, a folder containing only the text fi
 - [License](#license)
 - [Results](#results)
 - [Metrics](#metrics)
+- [Results](#results)
+- [Metrics](#metrics)
 
 ## How it works
 
