@@ -8,6 +8,11 @@ import os
 from natsort import natsorted
 # Import for the project path
 from criterias import path_project
+# For the tokenization in words:
+import nltk
+nltk.download('punkt_tab')
+from nltk.tokenize import word_tokenize
+
 
 # Main function that scans the folders of folder_exit2
 def f21(folder_exit2,folder_exit3,dic1, dic2, list_bad_books, L_name_books_withoutext):
@@ -52,30 +57,42 @@ def f21(folder_exit2,folder_exit3,dic1, dic2, list_bad_books, L_name_books_witho
                     content = f.read()
                 # Add it to the list
                 l_contents.append(content)
-        # Set the compteur to True
-        compteur = True
-        # Iterate through the list l_contents up to len(list)-2
-        for k in range(len(l_contents)-2):
-            # Check if the content matches the next two items
-            if l_contents[k] == l_contents[k+1] == l_contents[k+2] and fvide21(l_contents[k]):
-                # If so:
-                dic1, dic2, list_bad_books, L_name_books_withoutext, name_book = fsupprime21(dic1, dic2, list_bad_books, L_name_books_withoutext, name_book)
-                # Set the compteur to False because the book should not be transferred
-                compteur = False
-                # Exit the loop to reduce complexity
-                break
+        # Set the counter to True
+        counter = True
+        # If the book has fewer than 2 elements: there is a problem with this book.
+        # Specifically, if the book has only one element:
+        if len(l_contents) == 1:
+            counter = False
+        # If there is more than one file, we can proceed with the analysis.
+        else:
+            # Iterate through the list l_contents up to len(liste)-2
+            for k in range(len(l_contents)-1):
+                # Check if the current content matches the next content.
+                if l_contents[k] == l_contents[k+1] and fnearlyempty21(l_contents[k]):
+                    # If so:
+                    dic1, dic2, list_bad_books, L_name_books_withoutext,name_book = fsupprime21(dic1, dic2, list_bad_books, L_name_books_withoutext,name_book)
+                    # Set the counter to False, as this book should not be transferred
+                    counter = False
+                    # Exit the loop to reduce complexity
+                    break
         # If the loop full without the condition being met, transfer the book; otherwise, do nothing:
-        if compteur == True:
+        if counter == True:
             # Perform the transfer:
             ftransfer21(name_book, folder_exit2, folder_exit3)
     return dic1, dic2, list_bad_books, L_name_books_withoutext
             
 
-# Function that detects if the file is empty: fvide21.
-# Returns True if the file is not empty.
-def fvide21(content):
-    if content == "":
+# Function to detect if the file is nearly empty: fpresquevide21. Nearly empty means fewer than 20 words.
+# Returns True if the file is not nearly empty.
+def fnearlyempty21(content):
+    # Tokenize:
+    tokenized_content = word_tokenize(content)
+    # Number of words
+    n4 = len(tokenized_content)
+    # If fewer than 20 words, return False:
+    if n4 < 20:
         return False
+    # Otherwise, return True
     return True
 
 # Function that removes the book from dic1, dic2, and L_name_books_withoutext: fsupprime21

@@ -94,7 +94,7 @@ def fcontent31(content):
 # And this function also adds it to: list_bad_books
 def fdelete31(dic1, dic2, dic3, list_bad_books, L_name_books_withoutext, name_book):
     L_name_books_withoutext = [book for book in L_name_books_withoutext if book != name_book]
-    list_bad_books.append("the book complies with epubs 2 and 3 standards but was written haphazardly: "+name_book)
+    list_bad_books.append("The book complies with EPUB 2 and 3 standards but was written in a haphazard manner: "+name_book)
     dic1 = {book: list for book, list in dic1.items() if name_book != book}
     dic2 = {book: dictionary for book, dictionary in dic2.items() if name_book != book}
     dic3 = {book: dictionary for book, dictionary in dic3.items() if name_book != book}

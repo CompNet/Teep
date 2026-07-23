@@ -2,14 +2,17 @@
 # We will use the Python `subprocess` module, which allows us to run other processes—i.e., programs other than Python—to execute our code.
 
 
-# 3.
-
 # Imports for project management
 import subprocess
 import os
+from pathlib import Path
+import shutil
 # Imports for project and Calibre paths
 from criterias import path_project
 from criterias import path_calibre
+
+
+# 3.
 
 # We create the function that converts an HTML file to text.
 def convert_html_to_txt(input_file, name_folder_exit, folder_exit_total):
@@ -41,12 +44,6 @@ def convert_html_to_txt(input_file, name_folder_exit, folder_exit_total):
 
 
 # 2. 
-
-# All imports
-from pathlib import Path
-import os
-import shutil
-
 
 # Transformation function
 def transformation(name_folder_entry, name_file, name_folder_exit, folder_entry_total, folder_exit_total):
@@ -96,11 +93,8 @@ def transformation(name_folder_entry, name_file, name_folder_exit, folder_entry_
         folder_to_suppress = path_project+"folder_temporary"
         shutil.rmtree(folder_to_suppress)
 
-# 1. 
 
-# All imports
-import os
-from pathlib import Path
+# 1. 
 
 def transformation_total(folder_entry_total, folder_exit_total):
     # Iterate through folder_entry_total
@@ -119,16 +113,7 @@ def transformation_total(folder_entry_total, folder_exit_total):
         # Create a corresponding subfolder with the same name in folder_books_texts
         # Get the folder name
         name_folder = under_folder.name
-        # Remove the "Oceanopdf" reference from the folder name; remove the first 16 characters (indices 0 to 15).
-        # Using slicing [16:]
-        # A new variable is required because keeping the old one would result in an incorrect filename during the later transformation stage.
-        # And only for "Oceano" folders
-        # If the folder name matches the "Oceano" pattern, rename it
-        if name_folder[:15] == "_OceanofPDF.com_" :
-            name_folder_without_Oceano = name_folder[16:]
-        # Otherwise, do nothing; the folder name remains the same:
-        else:
-            name_folder_without_Oceano =  name_folder
+        name_folder_without_Oceano =  name_folder
         # Create a new version in folder_books_texts
         # Define the path for the folder to be created
         # For example: "folder_parent/nouveau_folder"

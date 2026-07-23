@@ -162,7 +162,7 @@ def fglossary4(L_tokenized4_4, nb_lines4_4, text4):
         # They are still sorted alphabetically relative to letters.
         # And crucially, they are not letters!
         # Therefore, we require the absence of "“", "‘", or "\t" and that the digit flag remains True.
-        if ("“" not in under_list4) and ("‘" not in under_list4) and ("\t" not in under_list4) and a4 :
+        if ("“" not in under_list4) and ("‘" not in under_list4) and ("\t" not in under_list4) and ('"' not in under_list4) and ('[' not in under_list4) and a4 :
             if under_list4 == sorted(under_list4, reverse=False):
                 print("List of initial letters in alphabetical order:")
                 print(under_list4)
@@ -202,6 +202,8 @@ def fpublisher4(L_tokenized4_5, nb_lines4_5):
                 nbm4_52 += 1
     # Counter for numbers
     nbm4_53 = 0
+    # We desactive it:
+    """
     for word4_53 in L_tokenized4_5:
         # Stem the word
         m4_53 = stemmer4_5.stem(word4_53)
@@ -213,7 +215,7 @@ def fpublisher4(L_tokenized4_5, nb_lines4_5):
         except Exception as e:
             # Otherwise, do nothing.
             nbm4_53 = nbm4_53
-
+    """
     # If the data above is found in about 40% of the lines, it's a match.
     # Calculate the final count for the data above:
     nb_final5 = nbm4_5 + nbm4_52 + nbm4_53
@@ -242,7 +244,8 @@ def fprincipal5(dict2, dict3, L_name_books_withoutext):
         # For example: "folder_parent/nouveau_folder"
         path4 = Path(path_project + "folder_exit4/" + name_book4)
         path4.mkdir(parents=True, exist_ok=True)
-        # Retrieve its dictionary from dict2: for use with other features later. dict_book4 = dict2[name_book4]
+        # Retrieve its dictionary from dict2: maybe for use with other features later. dict_book4 = dict2[name_book4]
+        dict_book4 = dict2[name_book4]
         # We iterate through its folder within folder_exit3_1
         # Retrieval: get path4_1
         path4_1 = Path(path_project+"folder_exit3_1/"+name_book4)
@@ -253,7 +256,6 @@ def fprincipal5(dict2, dict3, L_name_books_withoutext):
             # For each file, check if it has already been processed using dict3
             # Get its name without the extension
             name_alone4 = file4.stem
-            print("for file "+name_alone4)
             # Get its value from dict3: dict3[name_book4][name_alone4]
             value4 = dict3[name_book4][int(name_alone4)]
             # Then use dict2
@@ -279,22 +281,27 @@ def fprincipal5(dict2, dict3, L_name_books_withoutext):
                 # facknowledgements4(L_tokenized4,nb_lines4)
                 if facknowledgements4(tokenized_content4,nb_lines_text_withoutempty4):
                     count4 += 1
+                    print("for file "+name_alone4)
                     print("detect facknowledgements4")
                 # ftitles4(L_tokenized4_1,nb_lines4_1)
                 if ftitles4(tokenized_content4,nb_lines_text_withoutempty4):
                     count4 += 1
+                    print("for file "+name_alone4)
                     print("detect ftitles4")
                 #fcopyright4(L_tokenized4_2,nb_lines4_2)
                 if fcopyright4(tokenized_content4,nb_lines_text_withoutempty4):
                     count4 += 1
+                    print("for file "+name_alone4)
                     print("detect fcopyright4")
                 #fglossary4(L_tokenized4_4,nb_lines4_4,text4)
                 if fglossary4(tokenized_content4,nb_lines_text_withoutempty4,content4):
                     count4 += 1
+                    print("for file "+name_alone4)
                     print("detect fglossary4")
                 #fpublisher4(L_tokenized4_5,nb_lines4_5)
                 if fpublisher4(tokenized_content4,nb_lines_text_withoutempty4):
                     count4 += 1
+                    print("for file "+name_alone4)
                     print("detect fpublisher4")
                 # If they return True. If count4 >= 1: Then set -1 in dict3
                 if count4 >= 1:

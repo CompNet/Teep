@@ -9,9 +9,10 @@ dic1, dic2, list_bad_books, L_name_books_withoutext = extraction_of_the_datas.f1
 print("Step 1 completed")
 
 
+"""
 print("Step 2 starting")
 # Handling step 2.
-# transformation_in_texts.py
+# transformation_in_texts.py 
 # Create the function 'transformation_total' (based on part 1).
 # It takes an input folder and an output folder as variables: folder_entry_total, folder_exit_total
 # These are the folder names, not their full paths.
@@ -20,9 +21,10 @@ print("Step 2 starting")
 import transformation_in_texts
 transformation_in_texts.transformation_total("folder_exit1","folder_exit2")
 print("Step 2 completed")
+"""
 
 
-print("Step 2.1 starting")
+print("Step 2.1 starting") 
 # Handling step 2.1:
 # detect_bet.py
 # f21(folder_exit2,folder_exit3,dic1, dic2, list_bad_books, L_name_books_withoutext)
@@ -39,13 +41,23 @@ dic3 = detector_of_references.fabrication_dictionnary3(dic1,L_name_books_without
 print("Step 3 completed")
 
 
-print("Step 3.1 starting")
+print("Step 3.1 starting") 
 # We'll handle step 3.1
 # Step 3.1 takes the following as input: "folder_exit3", "folder_exit3_1", dic1, dic2, dic3, list_bad_books, L_name_books_withoutext.
 # And outputs: dic1, dic2, dic3, list_bad_books, L_name_books_withoutext.
 import detect_errors3
 dic1, dic2, dic3, list_bad_books, L_name_books_withoutext = detect_errors3.f31("folder_exit3","folder_exit3_1",dic1, dic2, dic3, list_bad_books, L_name_books_withoutext)
 print("Step 3.1 completed")
+
+print(list_bad_books)
+print(L_name_books_withoutext)
+
+print("Step 5 starting")
+# We'll handle step 5.
+# Import the code file
+import total2 
+dic1,dic2,dic3,list_bad_books,L_name_books_withoutext = total2.ftotal2(dic1,dic2,dic3,list_bad_books,L_name_books_withoutext, "epubs","folder_exit3_1")
+print("Step 5 completed")
 
 
 print("Step 4 starting")

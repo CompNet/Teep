@@ -205,8 +205,6 @@ def f1(name_folder_entry):
             # parents=True: create parent folders as well if they don't exist
             # exist_ok=True: do not raise an error if the folder already exists
             pathfolder1a.mkdir(parents=True, exist_ok=True)
-            # Add the filename without the extension (name_withoutext1a) to the list of filenames without extensions (L_files1a)
-            L_files1a.append(name_withoutext1a)
 
             #Retrieve the OPF file
             #Find the .opf path via the container:
@@ -342,7 +340,7 @@ def f1(name_folder_entry):
                     # Retrieve the content value from it
                     A1b = tag_text1b.get_text()
                     # Retrieve B.b
-                    Bb1b = name_file1b
+                    Bb1b = detectsalahhashtag(name_file1b)
                     # We put them in a list and add this list to dictionary dic1.
                     # We look for the key: the book title without the extension (name_withoutext1b).
                     # We then append [A1b, Bb1b] to the value associated with this key.
@@ -353,6 +351,8 @@ def f1(name_folder_entry):
                     # For each book key, we have a dictionary where the keys are the files.
                     # The keys are their titles (i.e., the navPoints), and the values ​​are lists:
                     dic2[name_withoutext1b][Current_playorder] = [c1b, Bb1b, Current_playorder]
+                # Add the filename without the extension (name_withoutext1a) to the list of filenames without extensions (L_files1a)
+                L_files1a.append(name_withoutext1a)
 
             # If it is nav.xhtml (i.e., the 'else' case):
             else:
@@ -417,7 +417,7 @@ def f1(name_folder_entry):
                     # This is the text from tag 'a'—specifically: under_under_tag1d
                     AA1b =  under_under_tag1b.get_text()
                     # Retrieve B.b.
-                    BBb1b = name_file1b
+                    BBb1b = detectsalahhashtag(name_file1b)
                     # Put them in a list and add that list to dictionary dic1. 
                     # Target the key: the book title without extension (name_withoutext1b).
                     # Append [A., B.b.] to the value associated with this key
@@ -428,10 +428,12 @@ def f1(name_folder_entry):
                     # For each book key, there is a dictionary where the keys are the files. 
                     # The keys are their titles—i.e., the navpoints. And the values ​​in list form:
                     dic2[name_withoutext1b][current_playorder]=[cc1b,BBb1b,current_playorder]
+                # Add the filename without the extension (name_withoutext1a) to the list of filenames without extensions (L_files1a)
+                L_files1a.append(name_withoutext1a)
             
         except Exception as e:
-            # Add the full file name to the list of bad books, prefixed with: "this file does not comply with epub2 and epub3 standards: "
-            L_bad_books.append("this file does not comply with epub2 and epub3 standards: " + file1a.name) 
+            # Add the full file name to the list of bad books, prefixed with: ""This file does not comply with the EPUB 2 and EPUB 3 standards: "
+            L_bad_books.append("This file does not comply with the EPUB 2 and EPUB 3 standards: " + file1a.name) 
     
     # Return the dictionaries, the list of bad books, and the list of file names without extensions (L_files1a)
     return dic1, dic2, L_bad_books, L_files1a

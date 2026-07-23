@@ -1,172 +1,133 @@
-# Teep — Text Extraction from EPUBs
+# EPUB Chapter Extraction & Classification Pipeline
 
-Teep is a Python pipeline that automatically extracts the textual content of EPUB files, cleans it up, and then isolates the actual chapters of a book by filtering out everything that isn't part of the narrative (acknowledgements, copyright, glossary, publisher pages, etc.).
+This project is a Python pipeline that takes a folder of `.epub` files and, for each book, extracts its internal files (from the table of contents), filters out corrupted or badly-structured books, and classifies each remaining file as a **chapter**, **prologue**, **epilogue**, or **non-chapter content** (copyright page, glossary, acknowledgements, publisher page, about-the-author, etc.).
 
-The project aims to produce, for each book, a folder containing only the text files that correspond to chapters, prologues or epilogues.
+It was built to process a large, heterogeneous dataset of EPUB books (EPUB 2 and EPUB 3) and produce a clean, labeled dataset of "chapter" vs. "non-chapter" text files, suitable for downstream NLP tasks.
 
-## Table of contents
+The objective was the minimisation of the false negatives.
 
-- [How it works](#how-it-works)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Configuration (criterias.py)](#configuration-criteriaspy)
-- [Pipeline structure](#pipeline-structure)
-- [Usage](#usage)
-- [Output folder structure](#output-folder-structure)
-- [Internal dictionary structures](#internal-dictionary-structures)
-- [Evaluation (Test.py)](#evaluation-testpy)
-- [License](#license)
-- [Results](#results)
-- [Metrics](#metrics)
-- [Results](#results)
-- [Metrics](#metrics)
+## How it works — pipeline overview
 
-## How it works
+The pipeline runs in numbered stages, each reading the output of the previous one and writing to a new `folder_exitX` directory inside the project folder. Two parallel "tracks" exist:
 
-To lauch the pipeline you have to put your epubs in the folder: epubs. And then run the file: total.py
-You have to modify criterias.py with at least:
-- the path of the project in your machine.
-- the path to calibre in your machine. The path to: ebook-convert.exe.
+- **Track A (TOC-based, `.ncx` / `nav.xhtml`)** — for the ~88% of books with a usable, well-formed table of contents. This is the main track (`total.py`).
+- **Track B (OPF-based fallback, `.opf` spine)** — for books that were rejected by Track A because their TOC entries didn't match a clean numeric sequence. Track B re-processes those same books using the reading order declared in the `.opf` manifest/spine instead of the TOC (`total2.py`, invoked from within `total.py`).
 
-And you can modify the rest of the criterias as you want.
+### Stage 1 — Data extraction (`extraction_of_the_datas.py`)
+Opens every `.epub` in the input folder, locates the `.ncx` (EPUB 2) or `nav.xhtml` (EPUB 3) table of contents, and:
+- Extracts every internal content file listed in the TOC, in reading order, saving each one as a numbered file (`1`, `2`, `3`, ...) in `folder_exit1/<book_name>/`.
+- Builds `dic1` — for each book, the list of `[entry_title, filename]` pairs taken from the TOC.
+- Builds `dic2` — for each book, a dictionary mapping play order → `[total_files, filename, play_order]`.
+- Collects `list_bad_books` — EPUBs that fail to open or parse (non-compliant with the EPUB 2/3 standard).
+- Returns `L_name_books_withoutext` — the list of book names (folder names, without extension) that were successfully processed.
 
-The result will be in the folder: folder_exit4. A final folder containing, for each valid book, only the text files corresponding to actual chapters, epilogues and prologues. In the right order.
+### Stage 2 — HTML → plain text conversion (`transformation_in_texts.py`)
+Uses **Calibre**'s `ebook-convert` command-line tool (via `subprocess`) to convert every extracted HTML/XHTML file into a plain `.txt` file, preserving the folder structure (`folder_exit1` → `folder_exit2`).
 
-And the script total.py will also give:
+### Stage 2.1 — Duplicate/near-empty file detection (`detect_errors2.py`)
+For each book, checks whether consecutive files are identical *and* nearly empty (fewer than 20 tokens) — a sign of a poorly structured EPUB. If detected, the whole book is discarded (moved to `list_bad_books`, removed from the dictionaries). Otherwise, the book folder is transferred as-is to `folder_exit3`.
 
-- The dictionnary of annotations and the list of the book discarded with the reason. 
-- A general overview of the annotations of the books.
-- The number of books discarded and kept.
+### Stage 3 — TOC-based chapter/prologue/epilogue detection (`detector_of_references.py`)
+Builds `dic3`: for every file of every book, decides whether it is likely a **chapter/prologue/epilogue** (`1`), an excluded section such as copyright/epigraph/glossary/about-the-author/about-the-publisher/also-by (`-1`), or undetermined (`0`). Detection combines:
+- Keyword matching (case-insensitive) on the TOC entry title and on the filename.
+- A numeric-sequence detector (`f2détec3`) that looks for consecutive integers (`1, 2, 3, ...`) appearing as TOC titles/filenames, a strong signal of a chapter sequence.
 
-1. **Extraction** of the files of each book and extraction and creation of all the metadata. And first detection of malformed books. The books that are discarded are the books that do not respect the elementary rules of the norm Epub 2 or the norm Epub 3.
-2. **Conversion** of these HTM/HTML/XHTML files into plain text via Calibre.
-3. **First detection of malformed books** which are discarded from further processing.  The detection here is on the content of the files of the ebooks.
-4. **First detection of Chapters and non Chapters** Based on the metadata (keywords, numeric sequences..). Based on the keywords that you can ajust in criterias.py.
-5. **Second detection of malformed books** Based of the coherence between the metadatas and the real content of the ebook.
-6. **Second detection of non Chapters** In the files still not detected as Chapters nor no Chapters. Based on the content of the ebooks. Using statistical heuristics and stemming. Based on the criterias in criterias.py that you can customize. Production of a final folder containing, for each valid book, only the text files corresponding to actual chapters, epilogues and prologues. In the right order.
+### Stage 3.1 — Content-based validation of "chapter" files (`detect_errors3.py`)
+For every file flagged `1` in `dic3`, verifies the actual text content isn't near-empty (< 20 tokens). If any such file fails, the whole book is discarded. Books that pass are transferred to `folder_exit3_1`.
 
-## Requirements
+### Stage 5 — OPF-based fallback for rejected books (`total2.py`, using `extraction_of_the_datas5.py` and `detector_of_references5.py`)
+Re-attempts extraction and the next stages before 3.1 for the books discarded earlier (in `list_bad_books`) using the EPUB's `.opf` spine order instead of the TOC (files only have a filename, no title text, so classification here relies on filename keywords plus the numeric-sequence check). Results are merged back into `dic1`, `dic2`, `dic3` and `L_name_books_withoutext`.
 
-- Python 3.x
-- [Calibre](https://calibre-ebook.com/) installed (the script uses the `ebook-convert` executable bundled with Calibre)
-- Python libraries:
-  - `ebooklib`
-  - `beautifulsoup4` (`bs4`)
-  - `natsort`
-  - `nltk` (with the `punkt_tab` resource)
-  - `matplotlib`
-  - `numpy`
+### Stage 4 — Fine-grained content-based classification (`detector_chap.py`)
+For every file still marked "undetermined" (`0`) in `dic3`, runs a battery of content heuristics to catch non-chapter material that keyword/sequence matching missed:
+- **Acknowledgements** — stemmed-word density of thank/grateful/gratitude roots.
+- **Titles/short sections** — fewer than 200 tokens.
+- **Copyright pages** — short text containing "copyright" and/or the © symbol.
+- **Glossaries** — presence of the word "glossary", a high density of `:` characters, or long runs of lines whose first letters are in alphabetical order (a strong glossary/index signature).
+- **Publisher pages** — stemmed "publish" root plus URL/imprint-like tokens (`www`, `.Inc`, `.Ltd`, `https`).
 
-## Installation
+Files that end up flagged as chapters (`0` or `1`) are copied into `folder_exit4/<book_name>/`, the final, cleaned dataset of chapter files.
 
-```bash
-pip install ebooklib beautifulsoup4 natsort nltk matplotlib numpy
-```
+### Orchestration (`total.py`)
+Runs the whole pipeline end-to-end (Stage 1 → 2.1 → 3 → 3.1 → 5 → 4) and prints final statistics: total number of files processed, how many were classified as chapters (`1`), non-chapters (`-1`), undetermined (`0`), and how many books were kept vs. discarded.
 
-Make sure Calibre is installed on your machine and that the path to `ebook-convert` is correct (see configuration below).
+### Evaluation (`Test.py`)
+A standalone evaluation script that compares the pipeline's output (`folder_exit4`) against a manually annotated ground-truth dataset. It computes, per book and overall:
+- **Recall** and **accuracy** (precision) of chapter detection, plus the derived **F-score**.
+- **Kendall's tau** rank-correlation, to measure how well the detected reading order matches the true chapter order. The Kendall's tau is the one following the generalized Kendall principle as defined by Emond & Mason. And we do not take into account the false positives.
+It also plots bar charts and histograms of these metrics using `matplotlib`.
 
 ## Configuration (`criterias.py`)
 
-All the project's constants are centralized in `criterias.py`:
+All paths and detection keywords are centralized here so nothing is hard-coded elsewhere:
+- `path_project` — root folder of the project (**edit this to your local path**, forward slashes only).
+- `path_calibre` — path to the Calibre `ebook-convert` executable.
+- Keyword criteria: `c_chapter`, `c_prologue`, `c_epilogue`, `c_copyright`, `c_epigraph`, `c_glossary`, `c_about_author`, `c_about_publisher`, `c_also_by`.
+- `language` — language used for stemming (`SnowballStemmer`), currently `"english"`.
+- `L_roots_acknowledgements`, `L_words_publisher`, `c_publisher` — word lists/roots used by the acknowledgements and publisher detectors.
+- `c_Copyright`, `logo_Copyright` — copyright-page markers.
 
-| Variable | Role |
-|---|---|
-| `path_project` | Absolute path to the project's root folder (containing the EPUBs and all intermediate folders). Must be adapted to your machine. |
-| `path_calibre` | Path to Calibre's `ebook-convert` executable. |
-| `c_chapter`, `c_prologue`, `c_epilogue` | Lowercase keywords used to spot chapters/prologues/epilogues. |
-| `c_copyright`, `c_epigraph`, `c_glossary`, `c_about_author`, `c_about_publisher`, `c_also_by` | Keywords used to exclude sections that are not chapters. |
-| `language` | Language used for NLTK stemming (Snowball Stemmer). Defaults to `"english"`. |
-| `L_roots_acknowledgements` | Word roots used to detect acknowledgement pages. |
-| `L_words_publisher`, `c_publisher` | Criteria used to detect publisher-related pages. |
-| `c_Copyright`, `logo_Copyright` | Criteria used to detect copyright pages. |
+## Requirements
 
-**Before running anything, update `path_project` and `path_calibre` to match your environment.**
+- Python 3
+- [Calibre](https://calibre-ebook.com/) installed locally (for `ebook-convert`, used in the HTML→text conversion step)
+- Python packages:
+  - `ebooklib`
+  - `beautifulsoup4` (with an `xml` parser backend, e.g. `lxml`)
+  - `nltk` (with the `punkt_tab` tokenizer data — downloaded automatically at runtime)
+  - `natsort`
+  - `matplotlib`, `numpy` (for `Test.py` only)
 
-## Pipeline structure
+Install with:
+```bash
+pip install ebooklib beautifulsoup4 lxml nltk natsort matplotlib numpy
+```
+- The epubs that you put in the program must respect the norm Epub 2 or the norm Epub 3. In fact, most of the epubs that you can find are respecting these rules. If your book/folder does not it means that it is not an epub.
 
-`total.py` orchestrates the whole pipeline by calling the following modules in order:
+## Setup
 
-| Step | Module | Function | Role |
-|---|---|---|---|
-| 1 | `extraction_of_the_datas.py` | `f1("epubs")` | Scans the EPUBs, extracts the table of contents (`.ncx`/`nav.xhtml`) and the corresponding files into `folder_exit1`. Builds `dic1` (TOC entry text + filename per book) and `dic2` (per-file metadata). |
-| 2 | `transformation_in_texts.py` | `transformation_total("folder_exit1", "folder_exit2")` | Converts each extracted HTML/XHTML file into plain text via Calibre, into `folder_exit2`. |
-| 2.1 | `detect_errors2.py` | `f21(...)` | Detects "malformed" books: at least 3 consecutive strictly identical files. These books are discarded; the others are moved to `folder_exit3`. |
-| 3 | `detector_of_references.py` | `fabrication_dictionnary3(dic1, L_name_books_withoutext)` | Builds `dic3`: for each file of each book, flags whether it's a chapter (`1`), a section to exclude outright (`-1`, e.g. copyright/glossary/publisher), or neutral (`0`), based on the filename, the TOC entry text, and detection of numeric sequences in titles. |
-| 3.1 | `detect_errors3.py` | `f31(...)` | For each file flagged as a chapter (`1`), checks that it contains at least 20 words. If a book contains a chapter that's too short, it is discarded; otherwise it's moved to `folder_exit3_1`. |
-| 4 | `detector_chap.py` | `fprincipal5(dic2, dic3, L_name_books_withoutext)` | For files still marked "neutral" (`0`), applies 5 heuristic detectors (acknowledgements, section title, copyright, glossary, publisher) to flag them as `-1` if needed. Copies the remaining files (chapters, `0` or `1`) into `folder_exit4`, organized by book. |
-
-At the end, `total.py` prints statistics: total number of classified files, breakdown by status (`0`, `1`, `-1`), number of discarded books (`list_bad_books`), and number of remaining valid books.
-
-### Detail of the detectors in `detector_chap.py`
-
-- `facknowledgements4`: ratio of (stemmed words matching "thank"/"gratitude") to (number of lines) ≥ 0.3.
-- `ftitles4`: a file with fewer than 200 words is treated as a simple section title.
-- `fcopyright4`: text shorter than 20 lines containing the word "copyright" and/or the "©" symbol.
-- `fglossary4`: detects the word "glossary", a high density of ":" per line (> 70%), or a sequence of 13 consecutive lines whose first letters are alphabetically sorted (a typical signature of a glossary/index).
-- `fpublisher4`: combines the "publish" root, textual clues (`www`, `.Inc`, `.Ltd`, `https`), and the presence of numbers, with a density threshold of 0.4 per line.
-
-## Usage
-
-1. Put your `.epub` files in an `epubs/` folder inside `path_project`.
-2. Update `criterias.py` (paths).
-3. Run:
-
+1. Edit `criterias.py` and set `path_project` to your project's root folder, and `path_calibre` to your local Calibre installation.
+2. Place your `.epub` files in a subfolder named `epubs` inside `path_project`.
+3. Run the full pipeline:
 ```bash
 python total.py
 ```
+4. (Optional) Once you have a manually annotated ground-truth folder (`Dataset expected as output`), run the evaluation script:
+```bash
+python Test.py
+```
 
-The script successively creates and populates `folder_exit1`, `folder_exit2`, `folder_exit3`, `folder_exit3_1`, and `folder_exit4` inside `path_project`, then prints a statistical summary to the console.
-The script can be re-run multiple times on the same input folder without recreating already-existing folders (files are simply overwritten), at the cost of redundant computation.
+## Output folders
 
-## Output folder structure
+All intermediate and final folders are created automatically inside `path_project`:
 
 | Folder | Content |
 |---|---|
-| `folder_exit1` | Raw HTML/XHTML files extracted from the EPUBs, one subfolder per book. |
-| `folder_exit2` | Plain-text version of `folder_exit1` (after Calibre conversion). |
-| `folder_exit3` | Books from `folder_exit2` that passed the anti-duplication filter. |
-| `folder_exit3_1` | Books from `folder_exit3` whose detected chapters all contain at least 20 words. |
-| `folder_exit4` | **Final output**: for each valid book, only the files corresponding to actual chapters. |
+| `folder_exit1` | Raw extracted HTML/XHTML files, one subfolder per book (TOC-based track) |
+| `folder_exit2` | Same files converted to plain text |
+| `folder_exit3` | Books that passed the duplicate/near-empty check |
+| `folder_exit3_1` | Books that passed the content validation of chapter files |
+| `folder_exit5_1` / `folder_exit5_2` | Equivalent stages for the OPF-based fallback track (Stage 5) |
+| `folder_exit4` | **Final output**: cleaned files classified as chapters, one subfolder per book |
 
-## Internal dictionary structures
+## Notes / known limitations
 
-- **`dic1`**: `{book_name: [[TOC_entry_text, filename], ...]}` — one entry per file referenced in the table of contents.
-- **`dic2`**: `{book_name: {playorder: [total_nb_files, filename, playorder]}}` — per-file metadata.
-- **`dic3`**: `{book_name: {playorder: status}}` where `status` is:
-  - `1`: confirmed chapter
-  - `0`: neutral / not yet decided
-  - `-1`: to be excluded (acknowledgements, copyright, glossary, publisher page, epigraph, "also by", etc.)
-- **`list_bad_books`**: list of messages describing books discarded from processing (not EPUB 2/3 compliant, duplicated, or containing chapters that are too short).
-- **`L_name_books_withoutext`**: list of book names (without extension) still valid at a given stage of the pipeline.
-
-## Evaluation (`Test.py`)
-
-In the end you can also test the capacities of the program. With the code: Test.py.
-You have lauched the pipeline and obtained the results in the folder: folder_exit4. And you want to evaluate these results.
-You put the reference, the folders that you expect to obtain, folder containing a folder for each book, with in it only the text files corresponding to actual chapters, epilogues and prologues. In the right order. 
-In the folder: Dataset expected as output.
-In the list `L_name_books_errors` you the `list_bad_books` that you obtained when you launched total.py.
-And you launch the program: Test.py.
-You will obtain the metrics:
-
-- **Recall**,**accuracy** and **F-score** per book and on average.
-- **Kendall's tau** as defined by Emond & Mason to compare the order of detected chapters with the expected order. But the False positives are not taken into account.
-- Generation of histograms and bar charts (via `matplotlib`) to visualize these metrics across all books.
-
-## License
-
-This project is distributed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [`LICENSE`](./LICENSE) file for the full text.
+- The pipeline currently assumes chapter/section numbering uses Arabic numerals. But you can easily modify the code if you need. 
+- Re-running the pipeline on the same input is safe: output folders aren't recreated if they already exist, and files are simply overwritten — but this adds unnecessary computation. The stage: Stage 2 — HTML → plain text conversion (`transformation_in_texts.py`) is the reason that the program can takes multiple hours. If all your files have already been transformed you can bypass this by commenting this stage in total.py. It is easy. Eventually the running time is divided by a huge factor, a factor of 50 for instance.
+- Also, if the program fails or if you stop it during stage 2, suppress the folder: folder_temporary if it appears before re-running, otherwise it will make the program fail.
+- In the program now are two examples of epubs, found legally on gutenberg. One where we can use the .ncx and one where we have to use the .opf, to show you the different possibilites of the program.
 
 ## Results
 
-With 40 random books, from many sources with 1342 files:
-- 27.5% of the books discarded because malformed. 72.5% o the book kept and analyzed.
-- On the 1342 files of the 40 books. 18.6% of books annotated as non chapters, 69.8% annotated as chapters. And 11.6% non annotated, considered as chapters. 
+With 40 random books, from many sources with 2081 files:
+- 0% of the books discarded because malformed. 100% of the books kept and analyzed.
+- On the 2081 files of the 40 books. 18.6% of books annotated as non chapters, 69.8% annotated as chapters. And 11.6% non annotated, considered as chapters. 
 
 ## Metrics
 
-With 40 random books, from many sources with 1342 files:
-- The total **recall** is : 0.9920755696007331
-- The total **accuracy** is : 0.9809682181916577
-- The total **f-score** is : 0.9862999512731967
-- The **Kendall score** : 0.9640278444247414
+With 40 random books, from many sources with 2081 files:
+The objective was the minimisation of the false negatives, so the maximisation of the recall, wich is detrimental to the accuracy.
+- The total **recall** is : 0.99
+- The total **accuracy** is : 0.96
+- The total **f-score** is : 0.97
+- The **Kendall score** : 0.98
