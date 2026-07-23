@@ -1,5 +1,5 @@
-# Path to the project folder to be entered: use forward slashes (/), not backslashes (\).
-path_project = "C:/Users/Fichiers de Travail/stage 2A/Projet/Traitement/dossier git en ligne Traitement jeu de données 1 et 2/Teep/"
+# Path to the project folder to be entered: use forward slashes (/), not backslashes (\). With a / a the end. Model:
+path_project = "C:/Users/Teep/"
 
 # Calibre path: use forward slashes (/) instead of backslashes (\).
 # On Linux/macOS, it is often in the PATH.
