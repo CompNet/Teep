@@ -1,4 +1,4 @@
-# 5. 
+# 5.
 # Function to create our dictionary:
 
 # We will create specific functions for each detection task:
@@ -12,30 +12,12 @@
 # If "chapter," "epilogue," or "prologue" is found in the filename.
 # We then convert the text to lowercase and check
 # if "chapter," "epilogue," or "prologue" is detected.
-# We then need to add the necessary items to "criterias"
-# and import them:
-import criterias
-c_chapter5 = criterias.c_chapter
-c_prologue5 = criterias.c_prologue
-c_epilogue5 = criterias.c_epilogue
-# We also put the criterias: 
-"""
-copyright
-epigraph 
-glossary
-about the author
-aubout the publisher
-also by
-"""
-c_copyright5 = criterias.c_copyright
-c_epigraph5 = criterias.c_epigraph 
-c_glossaryr5 = criterias.c_glossary
-c_about_author5 = criterias.c_about_author 
-c_about_publisher5 = criterias.c_about_publisher
-c_also_by5 = criterias.c_also_by
+from teep.config import TeepConfig
+
+
 # And in that case, we need to set it to -1.
 # We fill in the 'if' statements in the code:
-def f1detec5(Bb):
+def f1detec5(Bb, config: TeepConfig):
     # We create a list containing A and Bb
     L_5 = [Bb]
     # We iterate through this list
@@ -44,28 +26,29 @@ def f1detec5(Bb):
         Text5 = text5.lower()
         # We use an 'if' statement for each criterion
         # We handle the -1 cases first because they rule out the subsequent ones
-        if c_copyright5 in Text5:
+        if config.c_copyright in Text5:
             return -1
-        if c_epigraph5 in Text5:
+        if config.c_epigraph in Text5:
             return -1
-        if c_glossaryr5 in Text5:
+        if config.c_glossary in Text5:
             return -1
-        if c_about_author5 in Text5:
+        if config.c_about_author in Text5:
             return -1
-        if c_about_publisher5 in Text5:
+        if config.c_about_publisher in Text5:
             return -1
-        if c_also_by5 in Text5:
+        if config.c_also_by in Text5:
             return -1
         # Avec: if .. in : return True
-        if c_chapter5 in Text5:
+        if config.c_chapter in Text5:
             return True
-        if c_prologue5 in Text5:
+        if config.c_prologue in Text5:
             return True
-        if c_epilogue5 in Text5:
+        if config.c_epilogue in Text5:
             return True
     # After iterating through the entire list without returning True,
     # we return False.
     return False
+
 
 # A function to detect chapters within the entire book.
 # Python algorithm:
@@ -95,7 +78,7 @@ def f2detec5(L_book5):
             # In this case, simply check if the text (ml5[j5]) is indeed the next number—specifically c5 + 1.
             if ml5[j5] == str(c5):
                 # And increment c5
-                c5+=1
+                c5 += 1
                 # Also store the text index j5 in Lj5 by setting it to 1.
                 Lj5[j5] = 1
         # Otherwise: check if a5 is True
@@ -128,7 +111,7 @@ def f2detec5(L_book5):
 
 
 # Final function to call them:
-def fabrication_dictionary5(dic1, L_name_books_withoutext5):
+def build_dic5(dic1, L_name_books_withoutext5, config: TeepConfig):
     # Create the final dictionary: dic3_1
     dic3_1 = {}
     # Iterate through L_name_books_withoutext5
@@ -143,7 +126,7 @@ def fabrication_dictionary5(dic1, L_name_books_withoutext5):
 
         # Pass L_5 to f2detec5(L_book5)
         L_result5 = f2detec5(L_5)
-        
+
         # Then iterate through L_5 for f1detec5([B.b.])
         for kk5 in range(len(L_5)):
             # L_5[kk5] = [B.b.]
@@ -151,7 +134,7 @@ def fabrication_dictionary5(dic1, L_name_books_withoutext5):
             # Thus: name_file5 = kk5 + 1
             name_file5 = kk5 + 1
             # And for each sub-list, we pass it to: f1detec5(L_5[kk5]) = f1detec5([B.b.])
-            value_5 = f1detec5(L_5[kk5][0])
+            value_5 = f1detec5(L_5[kk5][0], config)
             # We apply the consequences
             # If True, it means we found at least one reference to "chapter", "prologue", etc., in this file
             # Or L_result5[kk5] == 1
@@ -164,8 +147,7 @@ def fabrication_dictionary5(dic1, L_name_books_withoutext5):
             # Otherwise, we set it to 0
             else:
                 dic3_1[name_book5][name_file5] = 0
-        
-        print(name_book5)
-    
-    return dic3_1
 
+        print(name_book5)
+
+    return dic3_1

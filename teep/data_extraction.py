@@ -1,26 +1,29 @@
-#1. Data retrieval:
-#a. Locate the .ncx file.
-#Create a function with the code: f1
-#We will create a function using our code.
-#Input: the input folder (folder1a).
-#Output: our two data dictionaries; it also populates the output folder (folder_exit1).
-#We could technically run our code on the same input folder as many times as we like, though it would be an unnecessary waste of computational resources.
-#However, the resulting files will always be the same. Output folders are not recreated if they already exist.
-#The files themselves are overwritten each time.
+# 1. Data retrieval:
+# a. Locate the .ncx file.
+# Create a function with the code: f1
+# We will create a function using our code.
+# Input: the input folder (folder1a).
+# Output: our two data dictionaries; it also populates the output folder (folder_exit1).
+# We could technically run our code on the same input folder as many times as we like, though it would be an unnecessary waste of computational resources.
+# However, the resulting files will always be the same. Output folders are not recreated if they already exist.
+# The files themselves are overwritten each time.
 
-#Imports
-#For opening the epub folder
+# Imports
+# For opening the epub folder
 from pathlib import Path
-#For handling epubs
+
+# For handling epubs
 from ebooklib import epub
-#For parsing XML/XHTML
+
+# For parsing XML/XHTML
 from bs4 import BeautifulSoup
-#For file creation
+
+# For file creation
 import os
-#Imports
+
+# Imports
 import zipfile
-#Import for the project path
-from criterias import path_project
+
 
 # Function to extract the name from the path, removing any trailing '/' or '#'
 def detectsalahhashtag(name1):
@@ -49,8 +52,8 @@ def detectsalahhashtag(name1):
             j1b = kk1b
     # Extract the file name if a "/" was found
     if j1b != -1:
-    #way1b_1[j1b+1:] Afin du coup d'éviter le "/" en j1b. 
-        name_file1b = way1b_1[j1b+1:]
+        # way1b_1[j1b+1:] Afin du coup d'éviter le "/" en j1b.
+        name_file1b = way1b_1[j1b + 1 :]
     # Otherwise, we keep the path name. The path is essentially the file name.
     else:
         name_file1b = way1b_1
@@ -68,9 +71,10 @@ def fncxornav(content1, name_full1):
         # Using BeautifulSoup's XML parser
         soup = BeautifulSoup(content1, "xml")
         # Retrieve the "toc" attribute from the "spine" tag
-        tag1a = soup.select_one('spine')
+        tag1a = soup.select_one("spine")
+        assert not tag1a is None
         att1a = tag1a.get("toc")
-        # We don't expect to find a nav.xhtml reference in the spine here. 
+        # We don't expect to find a nav.xhtml reference in the spine here.
         # That would imply following the EPUB3 standard, which abandoned the spine attribute.
         # If not found, we assume it is "ncx"
         if att1a is None:
@@ -78,17 +82,18 @@ def fncxornav(content1, name_full1):
         # Retrieve the tag where the ID matches att1a
         # 1. Look for the tag with id = att1a
         # CSS syntax: tag[attribute='value']
-        tag1a = soup.select_one('[id =' + att1a + ']')
+        tag1a = soup.select_one("[id =" + att1a + "]")  # type: ignore
+        assert not tag1a is None
         # Retrieve the value of the "href" attribute from this tag
         # This gives us the path to the .ncx file
         pathncx1a = tag1a.get("href")
         ncx = 1
         # Indicate that the .ncx file has been found for this book
         print("a .ncx for the book:" + name_full1)
-                
-    except Exception as e:
+
+    except Exception:
         # Indicate that no .ncx file was found for this book
-        print("no .ncx for the book:"+name_full1)
+        print("no .ncx for the book:" + name_full1)
 
     # Check if there is a nav.xhtml
     # How to do it?
@@ -104,11 +109,12 @@ def fncxornav(content1, name_full1):
             # 1. Look for the tag with id="toc"
             # CSS syntax: tag[attribute='value']
             tag1a = soup.select_one('[id = "toc"]')
+            assert not tag1a is None
             # From this tag, retrieve the value of the 'href' attribute
             # This gives the path to the nav.xhtml file
             pathnav1a = tag1a.get("href")
             # Indicate that a nav file other than .ncx was found for this book
-            print("a nav.xhtml for the book:"+name_full1)
+            print("a nav.xhtml for the book:" + name_full1)
         # Otherwise, try:
         # Retrieve the tag that has "nav" as its 'id' attribute
         except:
@@ -116,22 +122,23 @@ def fncxornav(content1, name_full1):
                 # 1. Look for the tag with id="nav"
                 # CSS syntax: tag[attribute='value']
                 tag1a = soup.select_one('[id = "nav"]')
+                assert not tag1a is None
                 # Retrieve the attribute value for the href attribute from this tag
                 # This gives us the path to the nav.xhtml file
                 pathnav1a = tag1a.get("href")
                 # Indicate that a nav file other than the .ncx was found for this book
-                print("a nav.xhtml for the book:"+name_full1) 
-            except Exception as e:
+                print("a nav.xhtml for the book:" + name_full1)
+            except Exception:
                 # Indicate that no nav file other than the .ncx was found for this book
-                print("no nav with id: nav") 
-            
+                print("no nav with id: nav")
+
         # Note: sometimes the toc attribute points to the .ncx file. In that case, it was found in the spine (handled earlier).
         # That is why we stop here if we have already found something for the .ncx.
 
-    except Exception as e:
+    except Exception:
         # Indicate that no nav file other than the .ncx was found for this book
-        print("no nav.xhtml for the book:"+name_full1)
-    
+        print("no nav.xhtml for the book:" + name_full1)
+
     # If both an .ncx and a nav.xhtml (or similar) file are found, return the .ncx path:
     # Or if only the .ncx exists
     if ncx == 1:
@@ -142,7 +149,6 @@ def fncxornav(content1, name_full1):
 
     # We also need the ncx:
     return pathfinal1a, ncx
-
 
 
 # Function to extract the name from the path, removing the part after the #
@@ -164,7 +170,7 @@ def detecthashtag(name1_1):
     return way1b_2
 
 
-def f1(name_folder_entry):
+def extract_html(input_dir: Path, output_dir: Path) -> tuple[dict, dict, list, list]:
     # List of bad books
     L_bad_books = []
     # Create dictionaries:
@@ -178,15 +184,13 @@ def f1(name_folder_entry):
     # Retrieve the folder:
     # Retrieval
     # The folder
-    folder1a = Path(path_project + name_folder_entry)
     # Open this folder
     # Iterate through the files inside
     # Retrieve the files:
     # To be absolutely sure, retrieve only epub files
-    list_files1a = folder1a.glob("*.epub")
+    list_files1a = input_dir.glob("*.epub")
     # Iterate through the epub files:
     for file1a in list_files1a:
-        
         # Get the full filename, including the extension
         name_full1a = file1a.name
         # Get the full filename without the extension
@@ -194,68 +198,66 @@ def f1(name_folder_entry):
         # Open each file.
         # Attempt to open it; if it's invalid, add it to the list of invalid files:
 
-        try: 
+        try:
             book1a = epub.read_epub(file1a)
 
-            # Logically, we don't create folders for invalid books, so we create the folder only here:
-            # Create a folder with this name inside: folder_exit1
-            # Define its path
-            pathfolder1a = Path("folder_exit1/"+name_withoutext1a)
-            # Create the folder
-            # parents=True: create parent folders as well if they don't exist
-            # exist_ok=True: do not raise an error if the folder already exists
+            # Logically, we don't create folders for invalid books, so
+            # we create the folder only here:
+            pathfolder1a = output_dir / name_withoutext1a
             pathfolder1a.mkdir(parents=True, exist_ok=True)
 
-            #Retrieve the OPF file
-            #Find the .opf path via the container:
+            # Retrieve the OPF file
+            # Find the .opf path via the container:
 
-            #Retrieve the container content
+            # Retrieve the container content
 
-            #Create a tool to browse the zip file:
-            #here in read mode
-            with zipfile.ZipFile(file1a, 'r') as z:
-                #We know this path is the same for all container.xml files.
-                container = z.read('META-INF/container.xml')
+            # Create a tool to browse the zip file:
+            # here in read mode
+            with zipfile.ZipFile(file1a, "r") as z:
+                # We know this path is the same for all container.xml files.
+                container = z.read("META-INF/container.xml")
 
-            #Parse the container with BeautifulSoup and retrieve the .opf path:
-            #We know the path to it is always in the same location.
-            #We need to go to the "rootfile" tag and retrieve the "full-path" attribute
+            # Parse the container with BeautifulSoup and retrieve the .opf path:
+            # We know the path to it is always in the same location.
+            # We need to go to the "rootfile" tag and retrieve the "full-path" attribute
 
-            #Locate the "rootfile" tag
+            # Locate the "rootfile" tag
 
-            #Initialize the XML parser, for example:
-            #for HTML and XHTML: "lxml".
-            #container.xml is logically XML
+            # Initialize the XML parser, for example:
+            # for HTML and XHTML: "lxml".
+            # container.xml is logically XML
             soup1a = BeautifulSoup(container, "xml")
 
-            #If we just want the tag with a specific name:
+            # If we just want the tag with a specific name:
             Tag1a = soup1a.select_one("rootfile")
+            assert not Tag1a is None
 
-            #Retrieve the "full-path" attribute
-            path1a = Tag1a.get("full-path")
+            # Retrieve the "full-path" attribute
+            path1a = str(Tag1a.get("full-path"))
+            assert not path1a is None
 
-            #Then open the .opf file and retrieve its content using the path:
+            # Then open the .opf file and retrieve its content using the path:
 
-            #Create a tool to browse the zip file:
-            #here in read mode
-            with zipfile.ZipFile(file1a, 'r') as z:
-                #Find and read a file here based on its path within the folder.
-                #store its content in content1a
+            # Create a tool to browse the zip file:
+            # here in read mode
+            with zipfile.ZipFile(file1a, "r") as z:
+                # Find and read a file here based on its path within the folder.
+                # store its content in content1a
                 content1a = z.read(path1a)
 
             # The path to use
-            pathfinal1a, ncx = fncxornav(content1a,name_full1a)
+            pathfinal1a, ncx = fncxornav(content1a, name_full1a)
 
             # Moving on to 1.b.
 
             # Full name of the book without extension:
-            name_withoutext1b = file1a.stem 
+            name_withoutext1b = file1a.stem
 
             # Create the book key in dic1 and dic2
             # using the book name (from the folder) without the extension:
             dic1[name_withoutext1b] = []
             dic2[name_withoutext1b] = {}
-            
+
             # Retrieve and open the file. We have the file path within the book (pathfinal1a).
             # Extract the text following the last "/" to get the filename including its extension.
             nametoc1b = detectsalahhashtag(pathfinal1a)
@@ -271,18 +273,17 @@ def f1(name_folder_entry):
                 if name_item1b == nametoc1b:
                     # Retrieve its content.
                     content1b = item1b.get_content()
-            
+
             # Handle two cases depending on whether the opened TOC file is .ncx or nav.xhtml
             # If it is .ncx
             if ncx == 1:
-                
                 # Retrieve data from the file using BeautifulSoup:
-                # Need to retrieve all navPoint tags: 
+                # Need to retrieve all navPoint tags:
                 # Initialize the XML parser for .ncx:
                 # Using content1b
                 soup = BeautifulSoup(content1b, "xml")
                 # Retrieve all tags matching the criteria as a standard Python list:
-                tags1b = soup.select('navPoint')
+                tags1b = soup.select("navPoint")
                 # Get the total count of files (c1b):
                 # c1b is the size of the tags1b list
                 # because there are as many navPoints as there are files.
@@ -305,7 +306,8 @@ def f1(name_folder_entry):
                     # Get the file path:
                     # It is located within the 'content' sub-tag.
                     # Find the 'content' sub-tag:
-                    tag_content1b = b1b.find('content')
+                    tag_content1b = b1b.find("content")
+                    assert not tag_content1b is None
                     # Get the 'src' attribute:
                     path_file1b = tag_content1b.get("src")
                     # Remove the part after the '#' if it exists.
@@ -318,25 +320,27 @@ def f1(name_folder_entry):
                         if item1b.get_name() == name_file1b:
                             # Retrieve its content
                             content_1b = item1b.get_content()
-                    
+
                     # Go to the output folder: "folder_exit1/"+name_withoutext1b
                     # Create a file named after the playorder: playorder1b
-                    folder1b = "folder_exit1/"+name_withoutext1b
+                    folder1b = "folder_exit1/" + name_withoutext1b
                     # File name
                     # We assume we will always use the playorder we generated ourselves
                     name_file_final1b = str(Current_playorder)
-                    path_full1b = os.path.join(folder1b, name_file_final1b) 
+                    path_full1b = os.path.join(folder1b, name_file_final1b) + ".html"
                     # 'w' (write) mode creates the file if it doesn't exist or overwrites it if it does
-                    with open(path_full1b, 'wb') as f1b: 
+                    with open(path_full1b, "wb") as f1b:
                         # Write the content (content_1b) into it
-                        f1b.write(content_1b) 
+                        f1b.write(content_1b)
                     # Done
                     # Add info about this file to dic1: entry A's text and file B.b's name
                     # Retrieve A
                     # Access b1b's child tag, then the navLabel tag
                     tag_navLabel1b = b1b.navLabel
+                    assert not tag_navLabel1b is None
                     # Then access its child: "text"
                     tag_text1b = tag_navLabel1b.find("text")
+                    assert not tag_text1b is None
                     # Retrieve the content value from it
                     A1b = tag_text1b.get_text()
                     # Retrieve B.b
@@ -350,7 +354,11 @@ def f1(name_folder_entry):
                     # Without the extension, of course: name_withoutext1b.
                     # For each book key, we have a dictionary where the keys are the files.
                     # The keys are their titles (i.e., the navPoints), and the values ​​are lists:
-                    dic2[name_withoutext1b][Current_playorder] = [c1b, Bb1b, Current_playorder]
+                    dic2[name_withoutext1b][Current_playorder] = [
+                        c1b,
+                        Bb1b,
+                        Current_playorder,
+                    ]
                 # Add the filename without the extension (name_withoutext1a) to the list of filenames without extensions (L_files1a)
                 L_files1a.append(name_withoutext1a)
 
@@ -363,7 +371,8 @@ def f1(name_folder_entry):
                 soup = BeautifulSoup(content1b, "xml")
                 # We access the first <ol> tag; we only want the first one.
                 # To select tags by a specific name (e.g., 'ol'):
-                tag1b = soup.select_one('ol')
+                tag1b = soup.select_one("ol")
+                assert not tag1b is None
                 # We retrieve all the <li> tags within it.
                 under_tags1b = tag1b.find_all("li")
                 # We have the total count of files: cc1b.
@@ -379,6 +388,7 @@ def f1(name_folder_entry):
                     # We'll use the work done on the .ncx file for everything except BeautifulSoup.
                     # In any case, we need to access the child tag:
                     under_under_tag1b = under_tag1b.a
+                    assert not under_under_tag1b is None
                     # We retrieve the following:
                     # For each file:
                     # We retrieve the playorder:
@@ -402,38 +412,45 @@ def f1(name_folder_entry):
                             Content1b = Item1b.get_content()
                     # Navigate to the exit folder: "folder_exit1/"+name_withoutext1b
                     # Create a file named after the playorder: current_playorder
-                    Folder1b = "folder_exit1/"+name_withoutext1b
+                    Folder1b = output_dir / name_withoutext1b
                     # File name
                     Name_file_final1b = str(current_playorder)
-                    Path_full1b = os.path.join(Folder1b, Name_file_final1b) 
-                    # 'w' mode (write) creates the file if it doesn't exist or overwrites it if it does. 
+                    Path_full1b = os.path.join(Folder1b, Name_file_final1b) + ".html"
+                    # 'w' mode (write) creates the file if it doesn't exist or overwrites it if it does.
                     # It's binary data, so use 'wb'
-                    with open(Path_full1b, 'wb') as F1b: 
+                    with open(Path_full1b, "wb") as F1b:
                         # Write the content (content1b) into it
-                        F1b.write(Content1b) 
+                        F1b.write(Content1b)
                     # Done
                     # Add info about this file to dic1: the text from entry A and the file name B.b.
                     # Retrieve A.
                     # This is the text from tag 'a'—specifically: under_under_tag1d
-                    AA1b =  under_under_tag1b.get_text()
+                    AA1b = under_under_tag1b.get_text()
                     # Retrieve B.b.
                     BBb1b = detectsalahhashtag(name_file1b)
-                    # Put them in a list and add that list to dictionary dic1. 
+                    # Put them in a list and add that list to dictionary dic1.
                     # Target the key: the book title without extension (name_withoutext1b).
                     # Append [A., B.b.] to the value associated with this key
-                    dic1[name_withoutext1b].append([AA1b,BBb1b])
-                    # Populate dic2. 
-                    # The key is the original book title (the name of its epub folder). 
+                    dic1[name_withoutext1b].append([AA1b, BBb1b])
+                    # Populate dic2.
+                    # The key is the original book title (the name of its epub folder).
                     # Without the extension, of course: name_withoutext1b
-                    # For each book key, there is a dictionary where the keys are the files. 
+                    # For each book key, there is a dictionary where the keys are the files.
                     # The keys are their titles—i.e., the navpoints. And the values ​​in list form:
-                    dic2[name_withoutext1b][current_playorder]=[cc1b,BBb1b,current_playorder]
+                    dic2[name_withoutext1b][current_playorder] = [
+                        cc1b,
+                        BBb1b,
+                        current_playorder,
+                    ]
                 # Add the filename without the extension (name_withoutext1a) to the list of filenames without extensions (L_files1a)
                 L_files1a.append(name_withoutext1a)
-            
-        except Exception as e:
+
+        except Exception:
             # Add the full file name to the list of bad books, prefixed with: ""This file does not comply with the EPUB 2 and EPUB 3 standards: "
-            L_bad_books.append("This file does not comply with the EPUB 2 and EPUB 3 standards: " + file1a.name) 
-    
+            L_bad_books.append(
+                "This file does not comply with the EPUB 2 and EPUB 3 standards: "
+                + file1a.name
+            )
+
     # Return the dictionaries, the list of bad books, and the list of file names without extensions (L_files1a)
     return dic1, dic2, L_bad_books, L_files1a

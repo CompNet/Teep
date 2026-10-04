@@ -1,5 +1,4 @@
-# 3.
-# Function to create our dictionary:
+from teep.config import TeepConfig
 
 """Next, we move to the detector that identifies chapters, prologues, and epilogues. We use A and B.b:
 the entry text (A) and the filename (B.b).
@@ -42,60 +41,42 @@ dictionary: book name -> nested dictionary keyed by filename -> value of 0 or 1.
 # If "chapter," "epilogue," or "prologue" is found in the filename.
 # We then convert the text to lowercase and check
 # if "chapter," "epilogue," or "prologue" is detected.
-# We must then define the necessary criteria
-# and import them:
-import criterias
-c_chapter3 = criterias.c_chapter
-c_prologue3 = criterias.c_prologue
-c_epilogue3 = criterias.c_epilogue
-# We also include these criteria:
-"""
-copyright
-epigraph 
-glossary
-about the author
-about the publisher
-also by
-"""
-c_copyright3 = criterias.c_copyright
-c_epigraph3 = criterias.c_epigraph 
-c_glossaryr3 = criterias.c_glossary
-c_about_author3 = criterias.c_about_author 
-c_about_publisher3 = criterias.c_about_publisher
-c_also_by3 = criterias.c_also_by
+
+
 # And in this case, we need to set it to -1.
 # We fill in the if statements in the code:
-def f1détec3(A,Bb):
+def f1détec3(A, Bb, config: TeepConfig):
     # We create a list containing A and Bb
-    L_3 = [A,Bb]
+    L_3 = [A, Bb]
     # We iterate through this list
     for text3 in L_3:
         # We retrieve the text and convert it to lowercase:
         Text3 = text3.lower()
         # We use an if statement for each criterion
         # We handle the -1 cases first because they exclude the subsequent ones
-        if c_copyright3 in Text3:
+        if config.c_copyright in Text3:
             return -1
-        if c_epigraph3 in Text3:
+        if config.c_epigraph in Text3:
             return -1
-        if c_glossaryr3 in Text3:
+        if config.c_glossary in Text3:
             return -1
-        if c_about_author3 in Text3:
+        if config.c_about_author in Text3:
             return -1
-        if c_about_publisher3 in Text3:
+        if config.c_about_publisher in Text3:
             return -1
-        if c_also_by3 in Text3:
+        if config.c_also_by in Text3:
             return -1
         # With: if .. in : return True
-        if c_chapter3 in Text3:
+        if config.c_chapter in Text3:
             return True
-        if c_prologue3 in Text3:
+        if config.c_prologue in Text3:
             return True
-        if c_epilogue3 in Text3:
+        if config.c_epilogue in Text3:
             return True
     # After iterating through the entire list without returning True,
     # we return False.
     return False
+
 
 # A function to detect chapters within the entire book.
 # Python algorithm:
@@ -106,11 +87,11 @@ def f2détec3(L_book3):
     # Variables to create
     # We create two lists:
     # One: the first elements of each sub-list. LL3
-    LL3 = [k13 for [k13,k23] in L_book3]
+    LL3 = [k13 for [k13, k23] in L_book3]
     # A second one: the second elements of each sub-list. LLL3
-    LLL3 = [k23 for [k13,k23] in L_book3]
+    LLL3 = [k23 for [k13, k23] in L_book3]
     # We put them into ML3.
-    ML3 = [LL3,LLL3]
+    ML3 = [LL3, LLL3]
     # Lj3: the list of indices j3 indicating whether they are chapters or not (0 or 1).
     # Initially 0, with length len(L_book3)
     Lj3 = [0 for k3 in L_book3]
@@ -132,7 +113,7 @@ def f2détec3(L_book3):
                 # In this case, we simply check if the text (ml3[j3]) is indeed the next number—specifically c3 + 1.
                 if ml3[j3] == str(c3):
                     # And we increment c3
-                    c3+=1
+                    c3 += 1
                     # We also store the text index j3 in Lj3 by setting it to 1.
                     Lj3[j3] = 1
             # Otherwise: we check if a3 is True
@@ -164,7 +145,7 @@ def f2détec3(L_book3):
 
 
 # Final function to call them:
-def fabrication_dictionnary3(dict, L_name_books_withoutext3):
+def build_dic3(dic1: dict, L_name_books_withoutext3: list, config: TeepConfig) -> dict:
     # Create the final dictionary: dic_3
     dic_3 = {}
     # Iterate through L_name_books_withoutext3
@@ -172,12 +153,12 @@ def fabrication_dictionnary3(dict, L_name_books_withoutext3):
         # Create a dictionary entry for the book in dic_3:
         dic_3[name_book3] = {}
         # Retrieve the corresponding value from dict for each book
-        L_3 = dict[name_book3]
+        L_3 = dic1[name_book3]
         # The value is a list (L_3) containing pairs of [A., B.b.] for each file.
         # L_3 = [[A., B.b.], ..., [A., B.b.]]
         # Where A. is the entry text and B.b. is the file name. # Then, pass L_3 into f2détec3(L_book3)
         L_result3 = f2détec3(L_3)
-        
+
         # Next, iterate through L_3 to call f1détec3([A.,B.b.])
         for kk3 in range(len(L_3)):
             # L_3[kk3] = [A.,B.b.]
@@ -186,7 +167,7 @@ def fabrication_dictionnary3(dict, L_name_books_withoutext3):
             # Thus: name_file3 = kk3 + 1
             name_file3 = kk3 + 1
             # And for each sub-list, pass it into: f1détec3(L_3[kk3]) = f1détec3([A.,B.b.])
-            value_3 = f1détec3(L_3[kk3][0], L_3[kk3][1])
+            value_3 = f1détec3(L_3[kk3][0], L_3[kk3][1], config)
             # Apply the consequences
             # If True, it means at least one reference to "chapter", "prologue", etc., was found in this file
             # Or L_result3[kk3] == 1
@@ -199,8 +180,7 @@ def fabrication_dictionnary3(dict, L_name_books_withoutext3):
             # Otherwise, set to 0
             else:
                 dic_3[name_book3][name_file3] = 0
-        
-        print(name_book3)
-    
-    return dic_3
 
+        print(name_book3)
+
+    return dic_3
