@@ -129,10 +129,13 @@ def extraction_pipeline(input_dir: Path):
     print("number of good books, that have not been discarded")
     print(len(L_name_books_withoutext))
 
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input-dir", type=Path, help="epub input directory")
     args = parser.parse_args()
 
     extraction_pipeline(args.input_dir)
+
+
+if __name__ == "__main__":
+    main()
