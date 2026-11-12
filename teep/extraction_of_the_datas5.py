@@ -206,14 +206,14 @@ def f1_5(
                             # Retrieve its content.
                             content_1b = item1b.get_content()
 
-                    # Navigate to the output folder: "folder_exit5_1/"+name_withoutext1a
                     # Create a file named after the playorder: playorder1b
                     # (Note: the folder path does not necessarily need to be a full system path.)
-                    folder1b = "folder_exit5_1/" + name_withoutext1a
                     # File name
                     # We assume we will always use the playorder we generated ourselves.
                     name_file_final1b = str(Current_playorder)
-                    path_full1b = os.path.join(folder1b, name_file_final1b)
+                    path_full1b = (pathfolder1a / name_file_final1b).with_suffix(
+                        ".html"
+                    )
                     # 'w' (write) mode creates the file if it doesn't exist or overwrites it if it does.
                     with open(path_full1b, "wb") as f1b:
                         # Write the content (content_1b) into the file

@@ -75,7 +75,6 @@ def extraction_pipeline(input_dir: Path):
     print("Step 4 starting")
 
     # We'll handle step 4.
-    # It returns nothing; it only modifies files.
     dic3_final = filter_chapter(
         input_dir.parent / "folder_exit3_1",
         input_dir.parent / "folder_exit4",
