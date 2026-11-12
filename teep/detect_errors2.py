@@ -3,7 +3,7 @@ import os
 from natsort import natsorted
 import nltk
 
-nltk.download("punkt_tab")
+nltk.download("punkt_tab", quiet=True)
 from nltk.tokenize import word_tokenize
 
 

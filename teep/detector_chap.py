@@ -23,7 +23,7 @@ import os
 # For word tokenization:
 import nltk
 
-nltk.download("punkt_tab")
+nltk.download("punkt_tab", quiet=True)
 from nltk.tokenize import word_tokenize
 
 from teep.config import TeepConfig
