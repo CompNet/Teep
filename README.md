@@ -10,8 +10,8 @@ The objective was the minimisation of the false negatives.
 
 The pipeline runs in numbered stages, each reading the output of the previous one and writing to a new `folder_exitX` directory inside the project folder. Two parallel "tracks" exist:
 
-- **Track A (TOC-based, `.ncx` / `nav.xhtml`)** — for the ~88% of books with a usable, well-formed table of contents. This is the main track (`total.py`).
-- **Track B (OPF-based fallback, `.opf` spine)** — for books that were rejected by Track A because their TOC entries didn't match a clean numeric sequence. Track B re-processes those same books using the reading order declared in the `.opf` manifest/spine instead of the TOC (`total2.py`, invoked from within `total.py`).
+- **Track A (TOC-based, `.ncx` / `nav.xhtml`)** — for the ~88% of books with a usable, well-formed table of contents. This is the main track (`cli.py`).
+- **Track B (OPF-based fallback, `.opf` spine)** — for books that were rejected by Track A because their TOC entries didn't match a clean numeric sequence. Track B re-processes those same books using the reading order declared in the `.opf` manifest/spine instead of the TOC (`opf.py`, invoked from within `cli.py`).
 
 ### Stage 1 — Data extraction (`extraction_of_the_datas.py`)
 Opens every `.epub` in the input folder, locates the `.ncx` (EPUB 2) or `nav.xhtml` (EPUB 3) table of contents, and:
@@ -35,7 +35,7 @@ Builds `dic3`: for every file of every book, decides whether it is likely a **ch
 ### Stage 3.1 — Content-based validation of "chapter" files (`detect_errors3.py`)
 For every file flagged `1` in `dic3`, verifies the actual text content isn't near-empty (< 20 tokens). If any such file fails, the whole book is discarded. Books that pass are transferred to `folder_exit3_1`.
 
-### Stage 5 — OPF-based fallback for rejected books (`total2.py`, using `extraction_of_the_datas5.py` and `detector_of_references5.py`)
+### Stage 5 — OPF-based fallback for rejected books (`opf.py`, using `extraction_of_the_datas5.py` and `detector_of_references5.py`)
 Re-attempts extraction and the next stages before 3.1 for the books discarded earlier (in `list_bad_books`) using the EPUB's `.opf` spine order instead of the TOC (files only have a filename, no title text, so classification here relies on filename keywords plus the numeric-sequence check). Results are merged back into `dic1`, `dic2`, `dic3` and `L_name_books_withoutext`.
 
 ### Stage 4 — Fine-grained content-based classification (`detector_chap.py`)
@@ -48,7 +48,7 @@ For every file still marked "undetermined" (`0`) in `dic3`, runs a battery of co
 
 Files that end up flagged as chapters (`0` or `1`) are copied into `folder_exit4/<book_name>/`, the final, cleaned dataset of chapter files.
 
-### Orchestration (`total.py`)
+### Orchestration (`cli.py`)
 Runs the whole pipeline end-to-end (Stage 1 → 2.1 → 3 → 3.1 → 5 → 4) and prints final statistics: total number of files processed, how many were classified as chapters (`1`), non-chapters (`-1`), undetermined (`0`), and how many books were kept vs. discarded.
 
 ### Evaluation (`Test.py`)
@@ -90,7 +90,7 @@ pip install ebooklib beautifulsoup4 lxml nltk natsort matplotlib numpy
 2. Place your `.epub` files in a subfolder named `epubs` inside `path_project`.
 3. Run the full pipeline:
 ```bash
-python total.py
+python cli.py
 ```
 4. (Optional) Once you have a manually annotated ground-truth folder (`Dataset expected as output`), run the evaluation script:
 ```bash
@@ -113,7 +113,7 @@ All intermediate and final folders are created automatically inside `path_projec
 ## Notes / known limitations
 
 - The pipeline currently assumes chapter/section numbering uses Arabic numerals. But you can easily modify the code if you need. 
-- Re-running the pipeline on the same input is safe: output folders aren't recreated if they already exist, and files are simply overwritten — but this adds unnecessary computation. The stage: Stage 2 — HTML → plain text conversion (`transformation_in_texts.py`) is the reason that the program can takes multiple hours. If all your files have already been transformed you can bypass this by commenting this stage in total.py. It is easy. Eventually the running time is divided by a huge factor, a factor of 50 for instance.
+- Re-running the pipeline on the same input is safe: output folders aren't recreated if they already exist, and files are simply overwritten — but this adds unnecessary computation. The stage: Stage 2 — HTML → plain text conversion (`transformation_in_texts.py`) is the reason that the program can takes multiple hours. If all your files have already been transformed you can bypass this by commenting this stage in cli.py. It is easy. Eventually the running time is divided by a huge factor, a factor of 50 for instance.
 - Also, if the program fails or if you stop it during stage 2, suppress the folder: folder_temporary if it appears before re-running, otherwise it will make the program fail.
 - In the program now are two examples of epubs, found legally on gutenberg. One where we can use the .ncx and one where we have to use the .opf, to show you the different possibilites of the program.
 

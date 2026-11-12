@@ -6,7 +6,7 @@ from teep.detect_errors2 import detect_erroneous_epubs
 from teep.detector_of_references import build_dic3
 from teep.detect_errors3 import detect_file_type
 from teep.detector_chap import filter_chapter
-from teep.total2 import opf_fallback
+from teep.opf import opf_fallback
 from teep.config import TeepConfig
 
 
@@ -57,6 +57,8 @@ def extraction_pipeline(input_dir: Path):
 
     print(list_bad_books)
     print(L_name_books_withoutext)
+
+    breakpoint()
 
     print("Step 5 starting")
     dic1, dic2, dic3, list_bad_books, L_name_books_withoutext = opf_fallback(
